@@ -18,7 +18,7 @@ function App() {
   const [apiKey, setApiKey] = useState("");
   const [blockchain, setBlockchain] = useState("");
   const [event, setEvent] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [gasPrice, setGasPrice] = useState({ one: "", three: "", five: "" });
 
   const allChain = [
@@ -131,7 +131,6 @@ function App() {
         inputEvents,
         "USD"
       );
-      console.log(data);
       if (data.error) {
         alert(data.error.error_message);
         setGasPrice({ one: "Error...", three: "Error...", five: "Error..." });
@@ -149,7 +148,6 @@ function App() {
           five: data.data.items[2].pretty_total_gas_quote,
         });
       }
-      setLoading(false);
     } catch (error) {
       alert("Error");
       setGasPrice({ one: "Error...", three: "Error...", five: "Error..." });
@@ -194,12 +192,26 @@ function App() {
         <Col className="col-span-full p-2">
           <Button
             variant="secondary"
-            onClick={() => {
-              getGasPrice(apiKey, blockchain, event);
+            onClick={async () => {
+              if (!apiKey || !blockchain || !event) {
+                return;
+              }
+
+              setLoading(true);
+              try {
+                await getGasPrice(apiKey, blockchain, event);
+              } finally {
+                setLoading(false);
+              }
             }}
-            className="font-semibold rounded-md w-full"
+            className={`font-semibold rounded-md w-full ${
+              loading || !apiKey || !blockchain || !event
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+            disabled={loading || !apiKey || !blockchain || !event}
           >
-            Submit
+            {loading ? "Loading..." : "Submit"}
           </Button>
         </Col>
       </Grid>
